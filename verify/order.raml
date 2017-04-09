@@ -1,31 +1,16 @@
 #%RAML 0.8
-title: supermarket-api
+title: supermarket-attendance-manage-api
 mediaType: application/json
 
-/:
+/attendances:
   get:
-    description: 测试根路径
-    responses:
-      200:
-        body:
-          application/json:
-            schema: |
-              {
-                "$schema": "http://json-schema.org/draft-04/schema#",
-                "type": "object",
-                "properties": {
-                  "items": {
-                    "type": "string"
-                  }
-                 }
-               }
-            example: |
-              {
-                "items": "/items"
-              }
-/items:
-  get:
-    description: 获取所有的商品列表
+    description: As an admin I can get all attendance information so that I can manage them.
+    queryParameters:
+      employee_id:
+        description: "The id of the employee used to filter the employee list"
+        example: "1"
+        type: integer
+        required: false
     responses:
       200:
         body:
@@ -34,41 +19,45 @@ mediaType: application/json
               {
                 "$schema": "http://json-schema.org/draft-04/schema#",
                 "type": "array",
-                "items": {
+                "attendances": {
                   "type": "object",
                   "properties": {
-                    "price": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "categoryUri": {
-                      "type": "string"
-                    },
                     "id": {
                       "type": "integer"
                     },
-                    "categoryId": {
+                    "employee_id": {
                       "type": "integer"
-                     }
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "present": {
+                      "type": "boolean"
+                    },
+                    "from_date": {
+                      "type": "string"
+                    },
+                    "to_date": {
+                      "type": "string"
+                    }
                   },
-                  "required": ["price", "name", "categoryUri", "id", "categoryId"]
+                  "required": ["employee_id", "description", "id", "present", "from_date", "to_date"]
                 }
               }
             example: |
               [
                 {
-                  "price": 10,
-                  "categoryUri": "categories/2",
-                  "name": "apple",
                   "id": 1,
-                  "categoryId": 2
+                  "employee_id": 1,
+                  "description": "sick leave",
+                  "from_date": "2017/03/02 08:00",
+                  "to_date": "2017/03/02 11:00",
+                  "present": false
                 }
               ]
 
   post:
-    description: 插入一个商品信息
+    description: As an admin I can create an attendance record so that I can manage employee's attendance.
     body:
       application/json:
         schema: |
@@ -76,24 +65,217 @@ mediaType: application/json
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
             "properties": {
-              "price": {
-                "type": "number"
+              "employee_id": {
+                "type": "integer"
               },
+              "description": {
+                "type": "string"
+              },
+              "present": {
+                "type": "boolean"
+              },
+              "from_date": {
+                "type": "string"
+              },
+              "to_date": {
+                "type": "string"
+              }
+            },
+            "required": ["employee_id", "description", "present", "from_date", "to_date"]
+          }
+        example: |
+         {
+           "employee_id": 1,
+           "description": "sick leave",
+           "from_date": "2017/03/02 08:00",
+           "to_date": "2017/03/02 11:00",
+           "present": false
+         }
+
+    responses:
+      201:
+        body:
+          application/json:
+            schema: |
+              {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "attendance_url": "string",
+                  "required": true
+
+                }
+              }
+            example: |
+              {
+                "attendance_url": "attendances/1"
+              }
+
+  /{id}:
+    get:
+      description: As an admin I can get an concrete attendance so I can see the attendance detail.
+      responses:
+        200:
+          body:
+            application/json:
+              schema: |
+                {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "employee_id": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "integer"
+                    },
+                    "present": {
+                      "type": "boolean"
+                    },
+                    "from_date": {
+                      "type": "string"
+                    },
+                    "to_date": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["employee_id","id", "name", "department_id", "gender", "role_id"]
+                }
+              example: |
+                {
+                  "id": 1,
+                  "employee_id": "1",
+                  "name": "Jane Smith",
+                  "present": true,
+                  "from_date": "2017/03/02 08:00",
+                  "to_date": "2017/03/02 11:00"
+                }
+
+    put:
+      description: As an admin I can update an attendance information when I find this attendence has error.
+      body:
+        application/json:
+          schema: |
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "employee_id": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                },
+                "present": {
+                  "type": "boolean"
+                },
+                "from_date": {
+                  "type": "string"
+                },
+                "to_date": {
+                  "type": "string"
+                }
+              },
+              "required": ["employee_id","id", "description", "present", "from_date", "to_date"]
+            }
+          example: |
+            {
+              "id": 1,
+              "employee_id": "1",
+              "name": "Jane Smith",
+              "present": true,
+              "from_date": "2017/03/02 08:00",
+              "to_date": "2017/03/02 11:00"
+            }
+      responses:
+        204:
+
+/employees:
+  get:
+    description: As an admin I can get all employee information so that I can manage them.
+    responses:
+      200:
+        body:
+          application/json:
+            schema: |
+              {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "array",
+                "employees": {
+                  "type": "object",
+                  "properties": {
+                    "employee_url": {
+                      "type": "string"
+                    }
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "department_id": {
+                      "type": "integer"
+                    },
+                    "role_id": {
+                      "type": "integer"
+                    },
+                    "gender": {
+                      "type": "integer"
+                     }
+                  },
+                  "required": ["employee_url", "id", "name", "department_id", "gender", "role_id"]
+                }
+              }
+            example: |
+              [
+                {
+                  "id": 1,
+                  "employee_url": "employees/1",
+                  "name": "Jane Smith",
+                  "department_id": 2,
+                  "role_id": 3,
+                  "gender": "male"
+                }
+              ]
+
+  post:
+    description: As an admin I can create an employee information so that the employee can be managed.
+    body:
+      application/json:
+        schema: |
+          {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "type": "object",
+            "properties": {
               "name": {
                 "type": "string"
               },
-              "categoryId": {
+              "department_id": {
+                "type": "integer"
+              },
+              "role_id": {
+                "type": "integer"
+              },
+              "gender": {
                 "type": "integer"
                }
             },
-            "required": ["price", "name", "categoryId"]
+            "required": ["name", "department_id", "gender", "role_id"]
           }
         example: |
           {
-            "price": 10,
-            "name": "apple",
-            "categoryId": 2
+            "name": "Jane Smith",
+            "department_id": 2,
+            "role_id": 3,
+            "gender": "male"
           }
+
     responses:
       201:
         body:
@@ -103,515 +285,94 @@ mediaType: application/json
                 "$schema": "http://json-schema.org/draft-04/schema#",
                 "type": "object",
                 "properties": {
-                  "itemUri": {
+                  "employee_url": {
                     "type": "string"
                   }
                 },
-                "required": ["itemUri"]
+                "required": ["employee_url"]
               }
             example: |
               {
-                "itemUri": "items/10"
+                "employee_uri": "employees/3"
               }
 
   /{id}:
     get:
-      description: 根据商品id获取指定商品信息
+      description: As an admin I can get an concrete employee information so I can manage his/her information.
       responses:
         200:
           body:
             application/json:
               schema: |
                 {
-                  "$schema": "http://json-schema.org/draft-04/schema#",
                   "type": "object",
-                  "required": true,
                   "properties": {
-                    "price": {
-                      "type": "number"
+                    "id": {
+                      "type": "integer"
+                    },
+                    "employee_url": {
+                      "type": "string"
                     },
                     "name": {
                       "type": "string"
                     },
-                    "categoryUri": {
-                      "type": "string"
-                    },
-                    "id": {
+                    "department_id": {
                       "type": "integer"
                     },
-                    "categoryId": {
+                    "role_id": {
+                      "type": "integer"
+                    },
+                    "gender": {
                       "type": "integer"
                      }
                   },
-                  "required": ["price", "name", "categoryUri", "id", "categoryId"]
+                  "required": ["employee_url","id", "name", "department_id", "gender", "role_id"]
                 }
               example: |
                 {
-                  "price": 10,
-                  "categoryUri": "categories/2",
-                  "name": "apple",
                   "id": 1,
-                  "categoryId": 2
+                  "employee_url": "employees/1",
+                  "name": "Jane Smith",
+                  "department_id": 2,
+                  "role_id": 3,
+                  "gender": "male"
                 }
 
-    delete:
-      description: 删除指定商品id的商品信息
+    delete: As an admin I can delete an employee when she/he resign.
+      description: delete successfully.
       responses:
         204:
 
     put:
-      description: 更新指定商品id的商品信息
+      description: As an admin I can update an employee information when she/he change role or dempartment.
       body:
         application/json:
-          schema: |
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "required": true,
-              "properties": {
-                "price": {
-                  "type": "number"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "categoryId": {
-                  "type": "integer"
-                 }
-              },
-              "required": ["price", "name", "categoryUri", "id", "categoryId"]
-            }
-          example: |
-            {
-              "price": 10,
-              "name": "apple",
-              "categoryId": 2
-            }
-      responses:
-        204:
-
-/categories:
-  get:
-    description: 获取所有的分类列表
-    responses:
-      200:
-        body:
-          application/json:
-            schema: |
-              {
-                "$schema": "http://json-schema.org/draft-04/schema#",
-                "type": "object",
-                "required": true,
-                "totalCount": {
-                  "type": "integer"
-                },
-                "items": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "categoryId": {
-                        "type": "integer"
-                       }
-                    },
-                    "required": ["name", "id", "categoryId"]
-                  }
-                }
-              }
-            example: |
-              {
-                "totalCount": 4,
-                "items": [
-                  {
-                    "categoryUri": "categories/1",
-                    "name": "all",
-                    "id": 1
-                  },
-                  {
-                    "categoryUri": "categories/2",
-                    "name": "fruits",
-                    "id": 2
-                  },
-                  {
-                    "categoryUri": "categories/3",
-                    "name": "tools",
-                    "id": 3
-                  },
-                  {
-                    "categoryUri": "categories/4",
-                    "name": "milks",
-                    "id": 4
-                  }
-                ]
-              }
-
-  post:
-    description: 插入一个分类信息
-    body:
-      application/json:
         schema: |
           {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
             "properties": {
               "name": {
-                "type": "string",
-                "required": true
-              }
-            }
-          }
-        example: |
-          {
-            "name": "xxxx"
-          }
-    responses:
-      201:
-        body:
-          application/json:
-           schema: |
-             {
-               "$schema": "http://json-schema.org/draft-04/schema#",
-               "type": "object",
-               "properties": {
-                 "categoryUri": {
-                   "type": "string",
-                   "required": true
-                 }
-               }
-             }
-           example: |
-             {
-               "categoryUri": "xxxx"
-             }
-  /{id}:
-    get:
-      description: 根据分类id获取指定分类信息
-      responses:
-        200:
-          body:
-            application/json:
-              schema: |
-                {
-                  "$schema": "http://json-schema.org/draft-04/schema#",
-                  "type": "object",
-                  "properties": {
-                    "price": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "categoryUri": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "integer"
-                    },
-                    "categoryId": {
-                      "type": "integer"
-                     }
-                  },
-                  "required": ["price", "name", "categoryUri", "id", "categoryId"]
-                }
-              example: |
-                {
-                  "price": 10,
-                  "categoryUri": "categories/2",
-                  "name": "apple",
-                  "id": 1,
-                  "categoryId": 2
-                }
-    delete:
-      description: 删除指定id的分类信息
-      responses:
-        204:
-          description: 删除成功
-        412:
-          description: 删除失败，该分类下还有商品，不能删除
-          body:
-            application/json:
-              schema: |
-                {
-                  "$schema": "http://json-schema.org/draft-04/schema#",
-                  "type": "object",
-                  "properties": {
-                    "meaasge": {
-                      "type": "string",
-                      "required": true
-                    }
-                   }
-                 }
-              example: |
-                {
-                  "meaasge": "该分类下还有商品，不能删除"
-                }
-    put:
-      description: 更新指定id的分类信息
-      body:
-        application/json:
-          schema: |
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "required": true
-                }
-               }
-             }
-          example: |
-            {
-              "meaasge": "该分类下还有商品，不能删除"
-            }
-      responses:
-        204:
-/carts:
-  get:
-    description: 获取所有的购物车列表
-    responses:
-      200:
-        body:
-          application/json:
-            schema: |
-              {
-                "$schema": "http://json-schema.org/draft-04/schema#",
-                "type": "object",
-                "properties": {
-                  "totalCount": {
-                    "type": "number"
-                  },
-                  "items": {
-                    "type": "array",
-                    "properties": {
-                      "id": {
-                        "type": "number"
-                      },
-                      "userId": {
-                        "type": "string"
-                      },
-                      "items": {
-                        "type": "array",
-                        "properties": {
-                          "price": {
-                            "type": "number"
-                          },
-                          "id": {
-                            "type": "integer"
-                          },
-                          "categoryUri": {
-                            "type": "string"
-                          },
-                           "name": {
-                             "type": "string"
-                          },
-                           "categoryId": {
-                             "type": "integer"
-                          }
-                        },
-                        "required": ["price", "categoryId", "name", "categoryUri", "id"]
-                      }
-                    },
-                    "required": ["userId", "items", "id"]
-                  },
-                  "required": ["totalCount", "items"]
-                }
-              }
-            example: |
-              {
-                "totalCount": 3,
-                "items": [
-                  {
-                    "id": 1,
-                    "userId": 1,
-                    "items": [
-                      {
-                        "price": 2,
-                        "categoryUri": "categories/3",
-                        "name": "eraser",
-                        "id": 3,
-                        "categoryId": 3
-                      },
-                      {
-                        "price": 6,
-                        "categoryUri": "categories/2",
-                        "name": "orange",
-                        "id": 4,
-                        "categoryId": 2
-                      }
-                    ]
-                  },
-                  {
-                    "id": 2,
-                    "userId": 2,
-                    "items": [
-                      {
-                        "price": 10,
-                        "categoryUri": "categories/2",
-                        "name": "apple",
-                        "id": 1,
-                        "categoryId": 2
-                      },
-                      {
-                        "price": 5,
-                        "categoryUri": "categories/3",
-                        "name": "pen",
-                        "id": 2,
-                        "categoryId": 3
-                      }
-                    ]
-                  }
-                ]
-              }
-
-  post:
-    description: 插入一个购物车信息
-    body:
-      application/json:
-        schema: |
-          {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "type": "object",
-            "properties": {
-              "userId": {
-                "type": "number"
+                "type": "string"
               },
-              "items": {
-                "type": "array",
-                "items": {
-                  "type": "integer"
-                }
-              }
-            }
+              "department_id": {
+                "type": "integer"
+              },
+              "role_id": {
+                "type": "integer"
+              },
+              "gender": {
+                "type": "integer"
+               }
+            },
+            "required": ["name", "department_id", "gender", "role_id"]
           }
         example: |
-          {
-            "userId": "1",
-            "items": [1, 2, 3]
+         {
+           "name": "Jane Smith",
+           "department_id": 1,
+           "role_id": 2,
+           "gender": "male"
           }
-    responses:
-      201:
-        body:
-          application/json:
-            schema: |
-              {
-                "$schema": "http://json-schema.org/draft-04/schema#",
-                "type": "object",
-                "properties": {
-                  "cartUri": {
-                    "type": "string"
-                  }
-                }
-              }
-            example: |
-              {
-                "cartUri": "carts/4"
-              }
-  /{id}:
-    get:
-      description: 根据购物车id获取指定购物车详细信息
-      responses:
-        200:
-          body:
-            application/json:
-              schema: |
-                {
-                  "$schema": "http://json-schema.org/draft-04/schema#",
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "number"
-                    },
-                    "userId": {
-                      "type": "number"
-                    },
-                    "items": {
-                      "type": "array",
-                      "properties": {
-                        "price": {
-                          "type": "number"
-                        },
-                        "id": {
-                          "type": "number"
-                        },
-                        "categoryUri": {
-                          "type": "string"
-                        },
-                         "name": {
-                           "type": "string"
-                        },
-                         "categoryId": {
-                           "type": "number"
-                        },
-                        "required": ["price", "categoryId", "name", "categoryUri", "id"]
-                      }
-                    }
-                  }
-                }
-              example: |
-                {
-                  "id": 1,
-                  "userId": 1,
-                  "items": [
-                    {
-                      "price": 5,
-                      "categoryUri": "categories/3",
-                      "name": "pen",
-                      "id": 2,
-                      "categoryId": 3
-                    },
-                    {
-                      "price": 2,
-                      "categoryUri": "categories/3",
-                      "name": "eraser",
-                      "id": 3,
-                      "categoryId": 3
-                    },
-                    {
-                      "price": 6,
-                      "categoryUri": "categories/2",
-                      "name": "orange",
-                      "id": 4,
-                      "categoryId": 2
-                    }
-                  ]
-                }
-
-    delete:
-      description: 删除指定id的购物车信息
       responses:
         204:
-
-    put:
-      description: 更新指定id的购物车信息
-      body:
-        application/json:
-          schema: |
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "type": "integer",
-                  "required": true
-                }
-               }
-             }
-          example: |
-            {
-              "userId": 33
-            }
-      responses:
-        204:
-
-    /items/{id}:
-      delete:
-        description: 删除指定 cart.id 下 items.id 的购物车信息
-        responses:
-          204:
